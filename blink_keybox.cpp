@@ -55,13 +55,17 @@ KEYBOX::KEYBOX(int chan)
 
 void KEYBOX::begin(int speed, int id)
 {
-	channel->setMasterMode();
-	channel->begin(speed, id);
+	if (!channel->isInitialized())
+	{
+		channel->setMasterMode();
+		channel->begin(speed, id);
     
-	channel->sendNodeReset(0); //reset all nodes
-	delay(500);
-	channel->sendNodeStart(0); //make all connected nodes go active
-	delay(500);
+		channel->sendNodeReset(0); //reset all nodes
+		delay(500);
+		channel->sendNodeStart(0); //make all connected nodes go active
+		delay(500);
+	}
+	keyboxID = id;
 }
 
 bool KEYBOX::isConnected()
@@ -90,17 +94,16 @@ void KEYBOX::setRelayState(int relay, bool state)
 {
 	if (relay == 0) return;
 	if (relay > 12) return;
-	SDO_FRAME frame;
-	frame.nodeID = keyboxID;
-	frame.cmd = SDO_WRITE;
-	frame.index = 0x2001;
-	frame.subIndex = relay;
-	frame.dataLength = 1;
-	if (state)
-		frame.data[0] = 1; //turn that relay on!
-	else 
-		frame.data[0] = 0; //turn that relay off!
-	channel->sendSDORequest(&frame);
+	unsigned char data[8];
+	for (int y = 0; y < 8; y++) data[y] = 0;
+
+	relayState[relay-1] = state;
+
+	for (int x = 0; x < 12; x++)
+	{
+		if (relayState[x]) data[x / 8] |= (1 << (x % 8));
+	}
+	channel->sendPDOMessage(0x300 + keyboxID, 8, data);		
 }
 
 void KEYBOX::setDeviceCANSpeed(int speed)

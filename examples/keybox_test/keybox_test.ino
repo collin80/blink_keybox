@@ -9,25 +9,25 @@
 
 void setup()
 {
-
-	Serial.begin(115200);
-	KeyBox0.begin(125000, 0x20);
+  delay(5000);
+  Serial.begin(115200);
+  Serial.write("set up\n");
+  KeyBox0.begin(125000, 0x20);
 }
 
 void loop(){
-	static uint8_t which;
-	static bool state;
+  static uint8_t which;
+  static bool state;
 	
-	which++;
-	if (which == 12)
-	{
-		which = 0;
-		state = !state;
-	}
+  which++;
+  if (which == 12)
+  {
+    which = 0;
+    state = !state;
+  }
 	
-	KeyBox0.loop();
-	KeyBox0.setRelayState(which + 1, state);
-	delay(200);
+  KeyBox0.loop();
+  KeyBox0.setRelayState(which + 1, state);
+  delay(200);
+  Serial.write(".");
 }
-
-
