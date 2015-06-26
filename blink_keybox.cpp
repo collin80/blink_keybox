@@ -58,12 +58,11 @@ void KEYBOX::begin(int speed, int id)
 	if (!channel->isInitialized())
 	{
 		channel->setMasterMode();
-		channel->begin(speed, id);
+		channel->begin(speed, 5); //hard code our address as 5
     
-		channel->sendNodeReset(0); //reset all nodes
-		delay(500);
 		channel->sendNodeStart(0); //make all connected nodes go active
 		delay(500);
+		channel->sendNodeStart(0); //make all connected nodes go active
 	}
 	keyboxID = id;
 }
@@ -103,7 +102,7 @@ void KEYBOX::setRelayState(int relay, bool state)
 	{
 		if (relayState[x]) data[x / 8] |= (1 << (x % 8));
 	}
-	channel->sendPDOMessage(0x300 + keyboxID, 8, data);		
+	channel->sendPDOMessage(0x200 + keyboxID, 8, data);		
 }
 
 void KEYBOX::setDeviceCANSpeed(int speed)
